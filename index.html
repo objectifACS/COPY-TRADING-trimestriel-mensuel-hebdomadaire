@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>COPY-TRADING Mensuel</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #1e293b;
+      --panel: rgba(17, 24, 39, 0.94);
+      --card: rgba(31, 41, 55, 0.98);
+      --line: #334155;
+      --text: #f8fafc;
+      --muted: #cbd5e1;
+      --green: #22c55e;
+      --green-text: #86efac;
+      --blue: #38bdf8;
+      --yellow: #fde68a;
+      --soft-blue: rgba(56, 189, 248, 0.12);
+      --fluo-green: #39ff14;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      background: linear-gradient(160deg, var(--bg1), #111827 52%, var(--bg2));
+      color: var(--text);
+    }
+
+    body { padding: 18px; }
+
+    .app {
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.1;
+      letter-spacing: 0.5px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .field {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 12px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 14px;
+      color: #e2e8f0;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.35;
+    }
+
+    .fluo-green {
+      color: var(--fluo-green);
+      text-shadow: 0 0 6px rgba(57, 255, 20, 0.35);
+      font-weight: 800;
+    }
+
+    .field input {
+      width: 100%;
+      border: 1px solid #475569;
+      border-radius: 12px;
+      background: #0f172a;
+      color: #fff;
+      font-size: 18px;
+      padding: 14px 12px;
+      min-height: 48px;
+    }
+
+    .display-modes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+      align-items: center;
+    }
+
+    .display-label {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .mode-group {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mode-btn {
+      min-height: 46px;
+      border: 1px solid #475569;
+      border-radius: 14px;
+      background: #0f172a;
+      color: #e2e8f0;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 10px 16px;
+      cursor: pointer;
+    }
+
+    .mode-btn.active {
+      background: var(--soft-blue);
+      border-color: var(--blue);
+      color: #dbeafe;
+      box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.22);
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    button.action {
+      min-height: 52px;
+      border: 0;
+      border-radius: 14px;
+      font-size: 17px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 12px 18px;
+    }
+
+    .btn-primary { background: var(--green); color: #052e16; }
+    .btn-secondary { background: var(--blue); color: #082f49; }
+
+    .view-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .summary-card .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+
+    .summary-card .value {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.15;
+      word-break: break-word;
+    }
+
+    .table-wrap {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      overflow: auto;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.28);
+    }
+
+    table {
+      width: 100%;
+      min-width: 1160px;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #182334;
+      color: #fff;
+      padding: 14px 10px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: center;
+    }
+
+    tbody td {
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(71, 85, 105, 0.45);
+      text-align: center;
+      font-size: 15px;
+    }
+
+    tbody tr:nth-child(even) { background: rgba(30, 41, 59, 0.5); }
+
+    .month-label {
+      color: var(--yellow);
+      font-weight: 800;
+    }
+
+    .gain-brut { color: #93c5fd; font-weight: 700; }
+    .gain-net { color: var(--green-text); font-weight: 700; }
+    .net-detail {
+      display: inline-block;
+      margin-left: 6px;
+      color: #cbd5e1;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .gain-net-select .net-main {
+      display: inline-block;
+      font-size: 1em;
+      font-weight: 700;
+      transition: font-size 0.14s ease, font-weight 0.14s ease, transform 0.14s ease;
+    }
+
+    .gain-net-select .net-detail {
+      font-size: 0.86em;
+      font-weight: 600;
+      transition: font-size 0.14s ease, font-weight 0.14s ease, transform 0.14s ease;
+    }
+
+    .gain-net-select.select-zoom-active {
+      font-size: 1em !important;
+      font-weight: 700 !important;
+      transform: scale(1.04);
+    }
+
+    .gain-net-select.select-zoom-active .net-main {
+      font-size: 0.82em;
+      font-weight: 700;
+      opacity: 0.9;
+    }
+
+    .gain-net-select.select-zoom-active .net-detail {
+      font-size: 1.65em;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 0 12px rgba(57, 255, 20, 0.22);
+    }
+
+    .blank { color: #94a3b8; font-style: italic; }
+
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .mobile-list {
+      display: none;
+      gap: 12px;
+    }
+
+    .month-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .month-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--yellow);
+      margin-bottom: 10px;
+    }
+
+    .kv {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px 12px;
+      align-items: start;
+    }
+
+    .k {
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.3;
+    }
+
+    .v {
+      text-align: right;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+
+    .select-zoom {
+      transition: transform 0.14s ease, font-size 0.14s ease, font-weight 0.14s ease,
+                  box-shadow 0.14s ease, background 0.14s ease;
+      cursor: text;
+    }
+
+    .select-zoom::selection {
+      background: rgba(57, 255, 20, 0.78);
+      color: #07130a;
+    }
+
+    .select-zoom-active {
+      font-size: 1.22em !important;
+      font-weight: 900 !important;
+      color: #ffffff !important;
+      background: rgba(57, 255, 20, 0.12) !important;
+      box-shadow: inset 0 0 0 1px rgba(57, 255, 20, 0.46), 0 0 18px rgba(57, 255, 20, 0.16);
+      border-radius: 12px;
+      transform: scale(1.05);
+      position: relative;
+      z-index: 1;
+    }
+
+    .zoom-preview {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      padding: 14px 18px;
+      border-radius: 16px;
+      background: rgba(7, 19, 10, 0.96);
+      border: 1px solid rgba(57, 255, 20, 0.58);
+      color: #ffffff;
+      box-shadow: 0 14px 32px rgba(0, 0, 0, 0.38), 0 0 24px rgba(57, 255, 20, 0.18);
+      font-size: 34px;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: 0.3px;
+      display: none;
+      pointer-events: none;
+      white-space: nowrap;
+      max-width: calc(100vw - 24px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+
+    @media (max-width: 1200px) {
+      .controls { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .summary { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 900px) {
+      .controls, .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 760px) {
+      body { padding: 10px; }
+      h1 { font-size: 28px; }
+      .panel { padding: 14px; border-radius: 18px; }
+      .controls, .summary { grid-template-columns: 1fr; }
+      .buttons { flex-direction: column; }
+      .table-wrap { display: none; }
+      .mobile-list { display: grid; }
+      .display-modes { flex-direction: column; align-items: stretch; }
+      .mode-group { display: grid; grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="panel">
+      <h1>COPY-TRADING</h1>
+      <div class="subtitle">
+        Version mensuelle avec deux modes d’affichage. Par défaut, l’application affiche une vue condensée :
+        Départ, MOIS 1, puis les mois 3, 6, 9, 12… Vous pouvez aussi basculer vers l’affichage mois par mois. Un rajout mensuel ou hebdomadaire peut être pris en compte automatiquement.
+      </div>
+
+      <div class="controls">
+        <div class="field">
+          <label for="rateInput">PROFITS TRADING Taux moyen par jour (%) <span class="fluo-green">sur la Balance Amplifiée</span></label>
+          <input id="rateInput" type="text" inputmode="decimal" value="0,045" placeholder="Exemple : 0,045" />
+        </div>
+        <div class="field">
+          <label for="depositInput">Dépôt investi de départ ($)</label>
+          <input id="depositInput" type="text" inputmode="decimal" value="250" placeholder="Exemple : 250" />
+        </div>
+        <div class="field">
+          <label for="monthsInput">Nombre de mois</label>
+          <input id="monthsInput" type="number" inputmode="numeric" min="1" max="120" value="12" />
+        </div>
+        <div class="field">
+          <label for="daysPerMonthInput">Jours de trading par mois</label>
+          <input id="daysPerMonthInput" type="number" inputmode="numeric" min="1" max="31" value="22" />
+        </div>
+        <div class="field">
+          <label for="monthlyAddInput">Rajout Mensuel ($)</label>
+          <input id="monthlyAddInput" type="text" inputmode="decimal" value="0" placeholder="Exemple : 100" />
+        </div>
+        <div class="field">
+          <label for="weeklyAddInput">Rajout Semaine ($)</label>
+          <input id="weeklyAddInput" type="text" inputmode="decimal" value="0" placeholder="Exemple : 50" />
+        </div>
+      </div>
+
+      <div class="display-modes">
+        <div class="display-label">Mode d’affichage :</div>
+        <div class="mode-group">
+          <button type="button" id="quarterlyBtn" class="mode-btn active" onclick="setViewMode('quarterly')">Affichage 3 mois</button>
+          <button type="button" id="monthlyBtn" class="mode-btn" onclick="setViewMode('monthly')">Tous les mois</button>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button class="action btn-primary" onclick="generateTable()">Calculer</button>
+        <button class="action btn-secondary" onclick="resetDefaults()">Remettre l’exemple</button>
+      </div>
+
+      <div class="view-note" id="viewNote">
+        Vue active : Départ, MOIS 1, puis MOIS 3, 6, 9, 12…
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="summary" id="summary"></div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Mois</th>
+            <th>PROFITS TRADING Taux moyen par jour</th>
+            <th>Dépôt investi</th>
+            <th>Balance amplifiée TM</th>
+            <th>RSI</th>
+            <th>Gains Brut du mois</th>
+            <th>Gains Net du mois</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="mobile-list" id="mobileList"></div>
+
+
+    <div class="panel">
+      <div class="note">
+        Logique utilisée : chaque jour, le gain brut = balance × taux journalier. Le gain net = gain brut − 30 %.
+        La balance amplifiée du lendemain augmente avec le gain net multiplié par 24. Le tableau affiche uniquement
+        les mois visibles selon le mode choisi. Dans la colonne « Gains Net du mois », le montant entre parenthèses
+        correspond au net moyen par jour du mois. Le Rajout Mensuel, s’il est renseigné, est ajouté au début de chaque mois et amplifié x24 dans la balance. Le Rajout Semaine, s’il est renseigné, est ajouté tous les 5 jours de trading (début de chaque semaine de trading) et amplifié x24 dans la balance.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentDaysPerMonth = 22;
+    let currentViewMode = 'quarterly';
+    let currentRows = [];
+    let currentSummary = null;
+
+    let activeZoomElement = null;
+
+    function clearZoomSelection() {
+      if (activeZoomElement) {
+        activeZoomElement.classList.remove('select-zoom-active');
+        activeZoomElement = null;
+      }
+    }
+
+    function findZoomTarget(node) {
+      if (!node) return null;
+      if (node.nodeType === Node.TEXT_NODE) node = node.parentElement;
+      if (!node || !node.closest) return null;
+      return node.closest('.select-zoom');
+    }
+
+    function updateZoomPreviewFromSelection() {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+        clearZoomSelection();
+        return;
+      }
+
+      const selectedText = selection.toString().replace(/\s+/g, ' ').trim();
+      if (!selectedText) {
+        clearZoomSelection();
+        return;
+      }
+
+      const anchorTarget = findZoomTarget(selection.anchorNode);
+      const focusTarget = findZoomTarget(selection.focusNode);
+      const target = anchorTarget && anchorTarget === focusTarget ? anchorTarget : anchorTarget || focusTarget;
+
+      if (!target) {
+        clearZoomSelection();
+        return;
+      }
+
+      if (activeZoomElement && activeZoomElement !== target) {
+        activeZoomElement.classList.remove('select-zoom-active');
+      }
+
+      activeZoomElement = target;
+      activeZoomElement.classList.add('select-zoom-active');
+}
+
+    document.addEventListener('selectionchange', () => {
+      window.requestAnimationFrame(updateZoomPreviewFromSelection);
+    });
+
+    document.addEventListener('mousedown', (event) => {
+      if (!event.target.closest('.select-zoom')) {
+        clearZoomSelection();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        clearZoomSelection();
+        const selection = window.getSelection();
+        if (selection) selection.removeAllRanges();
+      }
+    });
+
+
+    function parseFrenchNumber(value) {
+      if (typeof value !== 'string') value = String(value);
+      const cleaned = value.replace(/\s/g, '').replace(/\$/g, '').replace(/,/g, '.');
+      const number = parseFloat(cleaned);
+      return isNaN(number) ? 0 : number;
+    }
+
+    function formatCurrency(value) {
+      return value.toLocaleString('fr-FR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }) + ' $';
+    }
+
+    function formatPercent(value) {
+      return value.toLocaleString('fr-FR', {
+        minimumFractionDigits: 3,
+        maximumFractionDigits: 6
+      }) + ' %';
+    }
+
+    function setViewMode(mode) {
+      currentViewMode = mode;
+      document.getElementById('quarterlyBtn').classList.toggle('active', mode === 'quarterly');
+      document.getElementById('monthlyBtn').classList.toggle('active', mode === 'monthly');
+      document.getElementById('viewNote').textContent = mode === 'quarterly'
+        ? 'Vue active : Départ, MOIS 1, puis MOIS 3, 6, 9, 12…'
+        : 'Vue active : tous les mois sont affichés.';
+      renderStoredResults();
+    }
+
+    function shouldShowRow(row) {
+      if (row.type === 'start') return true;
+      if (currentViewMode === 'monthly') return true;
+      return row.month === 1 || row.month % 3 === 0;
+    }
+
+    function addDesktopRow(html) {
+      document.getElementById('tableBody').insertAdjacentHTML('beforeend', html);
+    }
+
+    function addMobileCard(row) {
+      const rsiText = '—';
+      const brutText = row.type === 'start' ? '—' : formatCurrency(row.monthBrut);
+      const netText = row.type === 'start'
+        ? '—'
+        : `<span class="net-main">${formatCurrency(row.monthNet)}</span> <span class="net-detail">(${formatCurrency(row.monthNetPerDay)}/jour)</span>`;
+
+      const card = `
+        <div class="month-card">
+          <div class="month-title">${row.label}</div>
+          <div class="kv">
+            <div class="k">PROFITS TRADING Taux moyen par jour</div>
+            <div class="v">${formatPercent(row.ratePercent)}</div>
+
+            <div class="k">Dépôt investi</div>
+            <div class="v select-zoom">${formatCurrency(row.depositInvested)}</div>
+
+            <div class="k">Balance amplifiée TM</div>
+            <div class="v select-zoom">${formatCurrency(row.balance)}</div>
+
+            <div class="k">RSI</div>
+            <div class="v blank">${rsiText}</div>
+
+            <div class="k">Gains Brut du mois</div>
+            <div class="v select-zoom ${row.type === 'start' ? 'blank' : 'gain-brut'}">${brutText}</div>
+
+            <div class="k">Gains Net du mois</div>
+            <div class="v select-zoom ${row.type === 'start' ? 'blank' : 'gain-net gain-net-select'}">${netText}</div>
+          </div>
+        </div>
+      `;
+      document.getElementById('mobileList').insertAdjacentHTML('beforeend', card);
+    }
+
+    function renderStoredResults() {
+      const tableBody = document.getElementById('tableBody');
+      const mobileList = document.getElementById('mobileList');
+      const summary = document.getElementById('summary');
+
+      tableBody.innerHTML = '';
+      mobileList.innerHTML = '';
+
+      if (currentSummary) {
+        summary.innerHTML = `
+          <div class="summary-card">
+            <div class="label">Dépôt investi final</div>
+            <div class="value select-zoom">${formatCurrency(currentSummary.depositInvested)}</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">Balance amplifiée TM finale</div>
+            <div class="value select-zoom">${formatCurrency(currentSummary.balance)}</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">Gains Brut cumulés</div>
+            <div class="value select-zoom">${formatCurrency(currentSummary.totalBrutGains)}</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">Gains Net cumulés</div>
+            <div class="value select-zoom">${formatCurrency(currentSummary.totalNetGains)}</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">Rajouts mensuels cumulés</div>
+            <div class="value select-zoom">${formatCurrency(currentSummary.totalMonthlyAdds)}</div>
+          </div>
+          <div class="summary-card">
+            <div class="label">Rajouts semaines cumulés</div>
+            <div class="value select-zoom">${formatCurrency(currentSummary.totalWeeklyAdds)}</div>
+          </div>
+        `;
+      } else {
+        summary.innerHTML = '';
+      }
+
+      currentRows.filter(shouldShowRow).forEach((row) => {
+        addDesktopRow(`
+          <tr>
+            <td class="month-label">${row.label}</td>
+            <td>${formatPercent(row.ratePercent)}</td>
+            <td class="select-zoom">${formatCurrency(row.depositInvested)}</td>
+            <td class="select-zoom">${formatCurrency(row.balance)}</td>
+            <td class="blank">—</td>
+            <td class="select-zoom ${row.type === 'start' ? 'blank' : 'gain-brut'}">${row.type === 'start' ? '—' : formatCurrency(row.monthBrut)}</td>
+            <td class="select-zoom ${row.type === 'start' ? 'blank' : 'gain-net gain-net-select'}">${row.type === 'start' ? '—' : `<span class="net-main">${formatCurrency(row.monthNet)}</span> <span class="net-detail">(${formatCurrency(row.monthNetPerDay)}/jour)</span>`}</td>
+          </tr>
+        `);
+        addMobileCard(row);
+      });
+    }
+
+    function generateTable() {
+      const ratePercent = parseFrenchNumber(document.getElementById('rateInput').value);
+      const depositStart = parseFrenchNumber(document.getElementById('depositInput').value);
+      const months = Math.max(1, parseInt(document.getElementById('monthsInput').value, 10) || 12);
+      const daysPerMonth = Math.max(1, parseInt(document.getElementById('daysPerMonthInput').value, 10) || 22);
+      const monthlyAdd = Math.max(0, parseFrenchNumber(document.getElementById('monthlyAddInput').value));
+      const weeklyAdd = Math.max(0, parseFrenchNumber(document.getElementById('weeklyAddInput').value));
+      currentDaysPerMonth = daysPerMonth;
+      const rateDecimal = ratePercent / 100;
+
+      let balance = depositStart * 24;
+      let depositInvested = depositStart;
+      let totalBrutGains = 0;
+      let totalNetGains = 0;
+      let totalMonthlyAdds = 0;
+      let totalWeeklyAdds = 0;
+
+      currentRows = [{
+        type: 'start',
+        label: 'Départ',
+        month: 0,
+        ratePercent,
+        depositInvested,
+        balance,
+        monthBrut: 0,
+        monthNet: 0,
+        monthNetPerDay: 0
+      }];
+
+      for (let month = 1; month <= months; month++) {
+        let monthBrut = 0;
+        let monthNet = 0;
+
+        if (monthlyAdd > 0) {
+          depositInvested += monthlyAdd;
+          balance += monthlyAdd * 24;
+          totalMonthlyAdds += monthlyAdd;
+        }
+
+        for (let day = 1; day <= daysPerMonth; day++) {
+          if (weeklyAdd > 0 && (day === 1 || (day - 1) % 5 === 0)) {
+            depositInvested += weeklyAdd;
+            balance += weeklyAdd * 24;
+            totalWeeklyAdds += weeklyAdd;
+          }
+
+          const brutGain = balance * rateDecimal;
+          const netGain = brutGain * 0.70;
+          const amplifiedGain = netGain * 24;
+
+          depositInvested += netGain;
+          balance += amplifiedGain;
+          monthBrut += brutGain;
+          monthNet += netGain;
+          totalBrutGains += brutGain;
+          totalNetGains += netGain;
+        }
+
+        currentRows.push({
+          type: 'month',
+          label: `MOIS ${month}`,
+          month,
+          ratePercent,
+          depositInvested,
+          balance,
+          monthBrut,
+          monthNet,
+          monthNetPerDay: monthNet / daysPerMonth
+        });
+      }
+
+      currentSummary = {
+        depositInvested,
+        balance,
+        totalBrutGains,
+        totalNetGains,
+        totalMonthlyAdds,
+        totalWeeklyAdds
+      };
+
+      renderStoredResults();
+    }
+
+    function resetDefaults() {
+      document.getElementById('rateInput').value = '0,045';
+      document.getElementById('depositInput').value = '250';
+      document.getElementById('monthsInput').value = '12';
+      document.getElementById('daysPerMonthInput').value = '22';
+      document.getElementById('monthlyAddInput').value = '0';
+      document.getElementById('weeklyAddInput').value = '0';
+      currentViewMode = 'quarterly';
+      document.getElementById('quarterlyBtn').classList.add('active');
+      document.getElementById('monthlyBtn').classList.remove('active');
+      document.getElementById('viewNote').textContent = 'Vue active : Départ, MOIS 1, puis MOIS 3, 6, 9, 12…';
+      generateTable();
+    }
+
+    generateTable();
+  </script>
+</body>
+</html>
